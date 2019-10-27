@@ -1,11 +1,4 @@
-#ifndef THREADPOOL_H
-#define THREADPOOL_H
-#include <pthread.h>
-#include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <threadpool.h>
 
 typedef void (*thread_func_t)(void *arg);
 
@@ -31,14 +24,24 @@ typedef struct {
 * Return:
 *     ThreadPool_t* - The pointer to the newly created ThreadPool object
 */
-ThreadPool_t *ThreadPool_create(int num);
+void ThreadPool_t *ThreadPool_create(int num){
+    ThreadPool_t *tp = new ThreadPool_t[num];
+    // malloc/ new
+    // pthread_t thread_pool[num]; // creates the threadpool list
+    for (int i=0; i < num; i++){
+        pthread_create(tp->threads[i], NULL, Thread_run, NULL); // creates num threads and inserts them in the list
+    } 
+    return tp;
+}
 
 /**
 * A C style destructor to destroy a ThreadPool object
 * Parameters:
 *     tp - The pointer to the ThreadPool object to be destroyed
 */
-void ThreadPool_destroy(ThreadPool_t *tp);
+void ThreadPool_destroy(ThreadPool_t *tp){
+
+}
 
 /**
 * Add a task to the ThreadPool's task queue
@@ -50,7 +53,9 @@ void ThreadPool_destroy(ThreadPool_t *tp);
 *     true  - If successful
 *     false - Otherwise
 */
-bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg);
+bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
+
+}
 
 /**
 * Get a task from the given ThreadPool object
@@ -59,17 +64,22 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg);
 * Return:
 *     ThreadPool_work_t* - The next task to run
 */
-ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp);
+ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
+
+}
 
 /**
 * Run the next task from the task queue
 * Parameters:
 *     tp - The ThreadPool Object this thread belongs to
 */
-void *Thread_run(ThreadPool_t *tp);
+void *Thread_run(ThreadPool_t *tp){
+    while (true){ // infinite loop where the threadpool checks for tasks in the work queue
+        int *task = dequeue();
+        if (task != NULL) {
+            ThreadPool_add_work(tp,Map,task);
 
+        }
+    }
 
-#ifdef __cplusplus
 }
-#endif
-#endif

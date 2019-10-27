@@ -1,7 +1,5 @@
-#ifndef MAPREDUCE_H
-#define MAPREDUCE_H
+#include <mapreduce.h>
 
-// function pointer types used by library functions
 typedef void (*Mapper)(char *file_name);
 typedef void (*Reducer)(char *key, int partition_number);
 
@@ -11,11 +9,15 @@ void MR_Run(int num_files, char *filenames[],
 
 void MR_Emit(char *key, char *value);
 
-unsigned long MR_Partition(char *key, int num_partitions);
+unsigned long MR_Partition(char *key, int num_partitions){
+     unsigned long hash = 5381;
+    int c;
+    while ((c = *key++) != '\0'){
+        hash = hash*33 + c;
+    }
+    return hash % num_partitions;
+}
 
 void MR_ProcessPartition(int partition_number);
 
 char *MR_GetNext(char *key, int partition_number);
-#endif
-
-
