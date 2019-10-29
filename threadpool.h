@@ -15,8 +15,13 @@ typedef struct ThreadPool_work_t {
     thread_func_t func;              // The function pointer
     void *arg;                       // The arguments for the function
     // TODO: Add other members here if needed
-
-    
+    bool operator<(const ThreadPool_work_t &other) const {
+        struct stat st;
+        struct stat st2;
+        stat((const char*)arg, &st);
+        stat((const char*)other.arg, &st2);
+        return st.st_size < st2.st_size;
+    }
 } ThreadPool_work_t;
 
 typedef struct {
@@ -24,13 +29,7 @@ typedef struct {
     // do something to compare the two files
     // source for priority queue: https://en.cppreference.com/w/cpp/container/priority_queue
     // source for stat: https://techoverflow.net/2013/08/21/how-to-get-filesize-using-stat-in-cc/
-    auto cmp = [](const ThreadPool_work_t &task1, const ThreadPool_work_t &task2) { 
-        struct stat st1;
-        struct stat st2;
-        stat((const char*)task1.arg, &st1);
-        stat((const char*)task2.arg, &st2);
-        return st1.st_size < st2.st_size; };
-    priority_queue <ThreadPool_work_t, vector<ThreadPool_work_t>, decltype(cmp)> Pq(cmp); // a priority queue where the tasks are stored.
+    priority_queue <ThreadPool_work_t> pq; // a priority queue where the tasks are stored.
 } ThreadPool_work_queue_t;
 
 typedef struct {
