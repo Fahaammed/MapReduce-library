@@ -30,7 +30,7 @@ typedef struct {
         stat((const char*)task1.arg, &st1);
         stat((const char*)task2.arg, &st2);
         return st1.st_size < st2.st_size; };
-    priority_queue <ThreadPool_work_t, vector<ThreadPool_work_t>, decltype(cmp)> work_Pqueue(cmp); // a priority queue where the tasks are stored.
+    priority_queue <ThreadPool_work_t, vector<ThreadPool_work_t>, decltype(cmp)> Pq(cmp); // a priority queue where the tasks are stored.
 } ThreadPool_work_queue_t;
 
 typedef struct {
