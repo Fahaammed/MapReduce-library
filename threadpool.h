@@ -2,25 +2,47 @@
 #define THREADPOOL_H
 #include <pthread.h>
 #include <stdbool.h>
+#include <queue>
+#include <sys/stat.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+using namespace std;
 typedef void (*thread_func_t)(void *arg);
 
 typedef struct ThreadPool_work_t {
     thread_func_t func;              // The function pointer
     void *arg;                       // The arguments for the function
     // TODO: Add other members here if needed
+
+    
 } ThreadPool_work_t;
 
 typedef struct {
     // TODO: Add members here
+    // do something to compare the two files
+    // source for priority queue: https://en.cppreference.com/w/cpp/container/priority_queue
+    // source for stat: https://techoverflow.net/2013/08/21/how-to-get-filesize-using-stat-in-cc/
+    auto cmp = [](const ThreadPool_work_t &task1, const ThreadPool_work_t &task2) { 
+        struct stat st1;
+        struct stat st2;
+        stat((const char*)task1.arg, &st1);
+        stat((const char*)task2.arg, &st2);
+        return st1.st_size < st2.st_size; };
+    priority_queue <ThreadPool_work_t, vector<ThreadPool_work_t>, decltype(cmp)> work_Pqueue(cmp); // a priority queue where the tasks are stored.
 } ThreadPool_work_queue_t;
 
 typedef struct {
     // TODO: Add members here
+    pthread_t *threads;
+    ThreadPool_work_queue_t work_queue;
+
+    pthread_attr_t scheduling_policy; // the scheduling policy of the work que
+    unsigned int num_threads;  // number of threads
+    pthread_mutex_t thread_mutex_lock;  // a mutex loxk for the thread
+    pthread_cond_t thread_cond_lock;  // a conditional lock for the threads to wait
+    unsigned int num_tasks; //number of tasks
 } ThreadPool_t;
 
 
