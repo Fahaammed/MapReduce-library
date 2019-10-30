@@ -36,8 +36,6 @@ typedef struct {
     // TODO: Add members here
     pthread_t *threads;
     ThreadPool_work_queue_t work_queue;
-
-    pthread_attr_t scheduling_policy; // the scheduling policy of the work que
     unsigned int num_threads;  // number of threads
     pthread_mutex_t thread_mutex_lock;  // a mutex loxk for the thread
     pthread_cond_t thread_cond_lock;  // a conditional lock for the threads to wait

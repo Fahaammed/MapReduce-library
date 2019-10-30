@@ -1,4 +1,4 @@
-#include "threadpool.h"
+#include "threadpool.hpp"
 #include <iostream>
 #include <stdlib.h>
 
@@ -9,7 +9,7 @@
 * Return:
 *     ThreadPool_t* - The pointer to the newly created ThreadPool object
 */
-void ThreadPool_t *ThreadPool_create(int num){
+ThreadPool_t *ThreadPool_create(int num){
     ThreadPool_t *tp = new ThreadPool_t;
     tp->threads = new pthread_t[num];                                       // creates the threadpool list of size num
     tp->num_threads = num;
@@ -76,6 +76,7 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
     task.arg = tp->work_queue.pq.top().arg;                                 // assign the task.arg
     task.func = tp->work_queue.pq.top().func;                               // assign the task.func
     tp->work_queue.pq.pop();                                                // delete the task from the work queue
+    tp->num_tasks--;                                                        // decrease number of tasks
     pthread_mutex_lock(&(tp->thread_mutex_lock));                           // unlock
     return &task;                                                           // return the task
 }
@@ -88,12 +89,15 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
 void *Thread_run(void *tp){
     ThreadPool_t *threadPool = (ThreadPool_t*)tp;                           // cast the pointer to threadpool_t
     while (true){                                                           // infinite loop where the threadpool checks for tasks in the work queue
-        while(threadPool->num_tasks == 0){                                  // while the work que is empty the threads wait
+        if(threadPool->num_tasks == 0){                                     // while the work que is empty at the start the threads wait
             pthread_cond_wait(&(threadPool->thread_cond_lock),&(threadPool->thread_mutex_lock));
         }
         ThreadPool_work_t *task;                                            // creates a new task
-        task = ThreadPool_get_work(tp);                                     // gets the next task
+        task = ThreadPool_get_work(threadPool);                             // gets the next task
         (*(task.func))(task.arg);                                           // runs the task
+        if(threadPool->num_tasks == 0 ){
+            break;
+        }
     }
 
 }
