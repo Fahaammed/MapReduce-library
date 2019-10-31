@@ -11,7 +11,7 @@
 using namespace std;
 
 void Map(char *file_name) {
-    cout << "Opened" << endl;
+    cout << "Opened Map" << endl;
     FILE *fp = fopen(file_name, "r");
     assert(fp != NULL);
     char *line = NULL;
@@ -40,5 +40,5 @@ void Reduce(char *key, int partition_number) {
 }
 
 int main(int argc, char *argv[]) {
-    MR_Run(argc - 1, &(argv[1]), Map, 1, Reduce, 3);
+    MR_Run(argc - 1, &(argv[1]), Map, 10, Reduce, 10);
 }

@@ -70,7 +70,7 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
     }
     tp->work_queue.pq.push(ThreadPool_work_t{func,arg});                //pushing the task in the priority queue
     tp->num_tasks++;                                                    // increasing the number of tasks in the threadpool object
-    cout << (char *) tp->work_queue.pq.top().arg;
+    //cout << (char *) tp->work_queue.pq.top().arg;
     pthread_mutex_unlock(&(tp->thread_mutex_lock));                       // unlock
     return true;                                                        // successful
 }
@@ -83,14 +83,15 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
 *     ThreadPool_work_t* - The next task to run
 */
 ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
-    pthread_mutex_lock(&(tp->thread_mutex_lock));                           // lock to support concurrency
+    //pthread_mutex_lock(&(tp->thread_mutex_lock));                           // lock to support concurrency
+    cout<<"Inside ThreadPool_get_work"<<endl;
     static ThreadPool_work_t task;                                                 // create a new task
     task.arg = (void *) tp->work_queue.pq.top().arg;                                 // assign the task.arg
     task.func = tp->work_queue.pq.top().func;                               // assign the task.func
                                                     // delete the task from the work queue
     tp->num_tasks--;                                                        // decrease number of tasks
     tp->work_queue.pq.pop();
-    pthread_mutex_unlock(&(tp->thread_mutex_lock));                           // unlock
+    //pthread_mutex_unlock(&(tp->thread_mutex_lock));                           // unlock
     return &task;                                                           // return the task
 }
 
@@ -102,14 +103,14 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
 void *Thread_run(ThreadPool_t *tp){
     ThreadPool_t *threadPool = tp;                           // cast the pointer to threadpool_t
     while (true){                                                           // infinite loop where the threadpool checks for tasks in the work queue
-        printf("thread runs");
+        cout<<"thread runs in Thread_run before cond wait"<<endl;
         if(threadPool->task_added == false){                                     // while the work que is empty at the start the threads wait
             cout << "Waiting " << endl;
             pthread_cond_wait(&(threadPool->thread_cond_lock),&(threadPool->thread_mutex_lock));
         }
         cout << "Stopped waiting" << endl;
         ThreadPool_work_t *task;                                            // creates a new task
-        cout << (char *) threadPool->work_queue.pq.top().arg;
+        cout << (char *) threadPool->work_queue.pq.top().arg << endl;
         task = ThreadPool_get_work(threadPool);                             // gets the next task
         task->func(task->arg);                                           // runs the task
         

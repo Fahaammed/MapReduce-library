@@ -33,3 +33,13 @@ see: 70
 test: 55
 the: 66
 (null): 0
+each: 55
+expect: 64
+input: 72
+mapreduce: 60
+€: 1
+\: 1
+see: 70
+test: 55
+the: 66
+(null): 0
