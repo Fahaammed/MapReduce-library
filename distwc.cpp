@@ -19,7 +19,9 @@ void Map(char *file_name) {
     while (getline(&line, &size, fp) != -1) {
         char *token, *dummy = line;
         while ((token = strsep(&dummy, " \t\n\r")) != NULL)
+            cout << token << endl;
             MR_Emit(token, "1");
+
     }
     free(line);
     fclose(fp);
@@ -34,11 +36,11 @@ void Reduce(char *key, int partition_number) {
     sprintf(name, "result-%d.txt", partition_number);
 
     FILE *fp = fopen(name, "a");
-    printf("%s: %d\n", key, count);
+    // printf("%s: %d\n", key, count);
     fprintf(fp, "%s: %d\n", key, count);
     fclose(fp);
 }
 
 int main(int argc, char *argv[]) {
-    MR_Run(argc - 1, &(argv[1]), Map, 10, Reduce, 10);
+    MR_Run(argc - 1, &(argv[1]), Map, 1, Reduce, 1);
 }

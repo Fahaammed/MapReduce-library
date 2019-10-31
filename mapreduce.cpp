@@ -9,7 +9,7 @@ using namespace std;
 
 struct cmp_str
 {
-   bool operator()(char const *a, char const *b) const
+   bool operator()(char *a, char *b) const
    {
       return strcmp(a, b) < 0;
    }
@@ -37,6 +37,9 @@ void MR_Run(int num_files, char *filenames[],
                 for(int i = 0; i< num_files; i++){                                    
                     while(ThreadPool_add_work(MapperTP, (thread_func_t)map,filenames[i]) != true);
                 }
+                // for(unsigned int i = 0; i < MapperTP->num_threads;i++){
+                //     pthread_join(MapperTP->threads[i],NULL);
+                // }
                 MapperTP->task_added = true;
                 // cout << (char *) MapperTP->work_queue.pq.top().arg;
                 pthread_cond_broadcast(&(MapperTP->thread_cond_lock));
@@ -75,8 +78,10 @@ void *wrapper_func(void* num){
 //      pair in a certain position in that partition, keeping the partition sorted in ascending key order at all times.
 
 void MR_Emit(char *key, char *value){
-    cout<<"Inside MR_EMIT"<<endl;
+    
     pthread_mutex_lock(&lock1);
+    //cout<<"Inside MR_EMIT"<<endl;
+    
     unsigned long new_hash = MR_Partition(key,num_partitions);
     map_vector[new_hash].insert(pair<char*,char*>(key,value));
     //cout << "KEY: " << map_vector[new_hash].find(key)->first << endl;
@@ -96,13 +101,14 @@ unsigned long MR_Partition(char *key, int num_partitions){
 
 void MR_ProcessPartition(int partition_number){
     std::multimap<char*,char*>::iterator iterator1;
-    pthread_mutex_lock(&lock2);
+    // pthread_mutex_lock(&lock2);
     cout << "INSIDE MR PP" << endl;
     for(iterator1 = map_vector[partition_number].begin();iterator1 != map_vector[partition_number].end();){
         iterator1 = map_vector[partition_number].begin();
+        //cout<< iterator1->first << endl;
         reduce(iterator1->first,partition_number);
     }
-    pthread_mutex_unlock(&lock2);
+    // pthread_mutex_unlock(&lock2);
 
 }
 
