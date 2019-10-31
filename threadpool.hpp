@@ -15,6 +15,7 @@ typedef struct ThreadPool_work_t {
     thread_func_t func;              // The function pointer
     void *arg;                       // The arguments for the function
     // TODO: Add other members here if needed
+    // source for stat: https://techoverflow.net/2013/08/21/how-to-get-filesize-using-stat-in-cc/
     bool operator<(const ThreadPool_work_t &other) const {
         struct stat st;
         struct stat st2;
@@ -26,9 +27,7 @@ typedef struct ThreadPool_work_t {
 
 typedef struct {
     // TODO: Add members here
-    // do something to compare the two files
     // source for priority queue: https://www.geeksforgeeks.org/stl-priority-queue-for-structure-or-class/
-    // source for stat: https://techoverflow.net/2013/08/21/how-to-get-filesize-using-stat-in-cc/
     priority_queue <ThreadPool_work_t> pq; // a priority queue where the tasks are stored.
 } ThreadPool_work_queue_t;
 
@@ -40,6 +39,7 @@ typedef struct {
     pthread_mutex_t thread_mutex_lock;  // a mutex loxk for the thread
     pthread_cond_t thread_cond_lock;  // a conditional lock for the threads to wait
     unsigned int num_tasks; //number of tasks
+    bool task_added;
 } ThreadPool_t;
 
 

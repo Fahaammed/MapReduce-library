@@ -1,0 +1,35 @@
+W: 0
+for: 1
+ø: 0
+´: 1
+for: 1
+for: 1
+for: 1
+for: 1
+should: 1
+should: 1
+for: 1
+each: 1
+ N: 0
+: 1
+for: 1
+for: 1
+for: 1
+for: 1
+should: 1
+should: 1
+for: 1
+each: 1
+ N: 0
+î: 1
+for: 4
+each: 55
+expect: 64
+input: 72
+mapreduce: 60
+€: 1
+ú: 1
+see: 70
+test: 55
+the: 66
+(null): 0

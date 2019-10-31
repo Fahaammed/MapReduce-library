@@ -1,6 +1,9 @@
 #include "threadpool.hpp"
 #include <iostream>
 #include <stdlib.h>
+#include <iostream>
+
+using namespace std;
 
 /**
 * A C++ style constructor for creating a new ThreadPool object
@@ -10,9 +13,11 @@
 *     ThreadPool_t* - The pointer to the newly created ThreadPool object
 */
 ThreadPool_t *ThreadPool_create(int num){
+
     ThreadPool_t *tp = new ThreadPool_t;
-    tp->threads = new pthread_t[num];                                       // creates the threadpool list of size num
+    tp->threads = new pthread_t[num];      // creates the threadpool list of size num
     tp->num_threads = num;
+    tp->task_added = false;
     if((pthread_mutex_init(&(tp->thread_mutex_lock), NULL)) != 0 ){         //mutex lock initialization
         std::cerr<<"Error in initializing mutex lock\n";
     }
@@ -21,7 +26,8 @@ ThreadPool_t *ThreadPool_create(int num){
     }
     
     for (int i=0; i < num; i++){
-        pthread_create(&(tp->threads[i]), NULL, Thread_run, &tp);           // creates num threads and inserts them in the list
+        cout << "Creating " << endl;
+        pthread_create(&(tp->threads[i]), NULL,(void* (*)(void*))Thread_run, tp);           // creates num threads and inserts them in the list
     } 
     return tp;
 }
@@ -32,8 +38,13 @@ ThreadPool_t *ThreadPool_create(int num){
 *     tp - The pointer to the ThreadPool object to be destroyed
 */
 void ThreadPool_destroy(ThreadPool_t *tp){
+
+    for(unsigned int i = 0; i < tp->num_threads;i++){
+        pthread_join(tp->threads[i],NULL);
+    }
     if(tp->threads){
         // free(tp->queue);
+
         free(tp->threads);                                                  // free the threadpool
         pthread_mutex_destroy(&(tp->thread_mutex_lock));                    // free the mutex lock
         pthread_cond_destroy(&(tp->thread_cond_lock));                      // free the conditional lock
@@ -53,14 +64,15 @@ void ThreadPool_destroy(ThreadPool_t *tp){
 */
 bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
     
-    if (!pthread_mutex_lock(&(tp->thread_mutex_lock)){
-        tp->work_queue.pq.push(ThreadPool_work_t{func,arg});                //pushing the task in the priority queue
-        tp->num_tasks++;                                                    // increasing the number of tasks in the threadpool object
-        pthread_mutex_lock(&(tp->thread_mutex_lock));                       // unlock
-        return true;                                                        // successful
+    if (pthread_mutex_lock(&(tp->thread_mutex_lock)) != 0){
+        return false;                    // failed
+        
     }
-    return false;                                                           // failed
-
+    tp->work_queue.pq.push(ThreadPool_work_t{func,arg});                //pushing the task in the priority queue
+    tp->num_tasks++;                                                    // increasing the number of tasks in the threadpool object
+    cout << (char *) tp->work_queue.pq.top().arg;
+    pthread_mutex_unlock(&(tp->thread_mutex_lock));                       // unlock
+    return true;                                                        // successful
 }
 
 /**
@@ -72,12 +84,13 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
 */
 ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
     pthread_mutex_lock(&(tp->thread_mutex_lock));                           // lock to support concurrency
-    ThreadPool_work_t task;                                                 // create a new task
-    task.arg = tp->work_queue.pq.top().arg;                                 // assign the task.arg
+    static ThreadPool_work_t task;                                                 // create a new task
+    task.arg = (void *) tp->work_queue.pq.top().arg;                                 // assign the task.arg
     task.func = tp->work_queue.pq.top().func;                               // assign the task.func
-    tp->work_queue.pq.pop();                                                // delete the task from the work queue
+                                                    // delete the task from the work queue
     tp->num_tasks--;                                                        // decrease number of tasks
-    pthread_mutex_lock(&(tp->thread_mutex_lock));                           // unlock
+    tp->work_queue.pq.pop();
+    pthread_mutex_unlock(&(tp->thread_mutex_lock));                           // unlock
     return &task;                                                           // return the task
 }
 
@@ -86,18 +99,23 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
 * Parameters:
 *     tp - The ThreadPool Object this thread belongs to
 */
-void *Thread_run(void *tp){
-    ThreadPool_t *threadPool = (ThreadPool_t*)tp;                           // cast the pointer to threadpool_t
+void *Thread_run(ThreadPool_t *tp){
+    ThreadPool_t *threadPool = tp;                           // cast the pointer to threadpool_t
     while (true){                                                           // infinite loop where the threadpool checks for tasks in the work queue
-        if(threadPool->num_tasks == 0){                                     // while the work que is empty at the start the threads wait
+        printf("thread runs");
+        if(threadPool->task_added == false){                                     // while the work que is empty at the start the threads wait
+            cout << "Waiting " << endl;
             pthread_cond_wait(&(threadPool->thread_cond_lock),&(threadPool->thread_mutex_lock));
         }
+        cout << "Stopped waiting" << endl;
         ThreadPool_work_t *task;                                            // creates a new task
+        cout << (char *) threadPool->work_queue.pq.top().arg;
         task = ThreadPool_get_work(threadPool);                             // gets the next task
-        (*(task.func))(task.arg);                                           // runs the task
+        task->func(task->arg);                                           // runs the task
+        
         if(threadPool->num_tasks == 0 ){
             break;
         }
     }
-
+    return NULL;
 }
