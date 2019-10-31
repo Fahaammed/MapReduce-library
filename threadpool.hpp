@@ -37,6 +37,7 @@ typedef struct {
     ThreadPool_work_queue_t work_queue;
     unsigned int num_threads;  // number of threads
     pthread_mutex_t thread_mutex_lock;  // a mutex loxk for the thread
+    pthread_mutex_t thread_mutex_lock2;  // a mutex loxk for the thread
     pthread_cond_t thread_cond_lock;  // a conditional lock for the threads to wait
     unsigned int num_tasks; //number of tasks
     bool task_added;

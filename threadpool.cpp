@@ -21,6 +21,9 @@ ThreadPool_t *ThreadPool_create(int num){
     if((pthread_mutex_init(&(tp->thread_mutex_lock), NULL)) != 0 ){         //mutex lock initialization
         std::cerr<<"Error in initializing mutex lock\n";
     }
+    if((pthread_mutex_init(&(tp->thread_mutex_lock2), NULL)) != 0 ){         //mutex lock initialization
+        std::cerr<<"Error in initializing mutex lock\n";
+    }
     if((pthread_cond_init(&(tp->thread_cond_lock), NULL)) != 0){            //conditional lock initialization
         std::cerr<<"Error in initializing mutex conditional lock\n";
     }
@@ -64,10 +67,10 @@ void ThreadPool_destroy(ThreadPool_t *tp){
 */
 bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
     
-    // if (pthread_mutex_lock(&(tp->thread_mutex_lock)) != 0){
-    //     return false;                    // failed
+    if (pthread_mutex_lock(&(tp->thread_mutex_lock)) != 0){
+         return false;                    // failed
         
-    // }
+    }
     tp->work_queue.pq.push(ThreadPool_work_t{func,arg});                //pushing the task in the priority queue
     tp->num_tasks++;                                                    // increasing the number of tasks in the threadpool object
     //cout << (char *) tp->work_queue.pq.top().arg;
@@ -83,7 +86,7 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
 *     ThreadPool_work_t* - The next task to run
 */
 ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
-    // pthread_mutex_lock(&(tp->thread_mutex_lock));                           // lock to support concurrency
+    pthread_mutex_lock(&(tp->thread_mutex_lock2));                           // lock to support concurrency
     cout<<"Inside ThreadPool_get_work"<<endl;
     static ThreadPool_work_t task;                                                 // create a new task
     task.arg = (void *) tp->work_queue.pq.top().arg;                                 // assign the task.arg
@@ -91,7 +94,7 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
                                                     // delete the task from the work queue
     tp->num_tasks--;                                                        // decrease number of tasks
     tp->work_queue.pq.pop();
-    // pthread_mutex_unlock(&(tp->thread_mutex_lock));                           // unlock
+    pthread_mutex_unlock(&(tp->thread_mutex_lock2));                           // unlock
     return &task;                                                           // return the task
 }
 
@@ -101,23 +104,23 @@ ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
 *     tp - The ThreadPool Object this thread belongs to
 */
 void *Thread_run(ThreadPool_t *tp){
-    for(unsigned int i = 0; i < tp->num_threads;i++){
-        pthread_join(tp->threads[i],NULL);
-    }
+    // for(unsigned int i = 0; i < tp->num_threads;i++){
+    //     pthread_join(tp->threads[i],NULL);
+    // }
     ThreadPool_t *threadPool = tp;                           // cast the pointer to threadpool_t
     while (true){                                                           // infinite loop where the threadpool checks for tasks in the work queue
-        cout<<"thread runs in Thread_run before cond wait"<<endl;
+        cout<<"before cond wait"<<endl;
         pthread_mutex_lock(&(tp->thread_mutex_lock));
         while(threadPool->task_added == false){                                     // while the work que is empty at the start the threads wait
-            cout << "Waiting " << endl;
+            // cout << "Waiting " << endl;
             pthread_cond_wait(&(threadPool->thread_cond_lock),&(threadPool->thread_mutex_lock));
         }
         cout << "Stopped waiting" << endl;
         ThreadPool_work_t *task;                                            // creates a new task
-        cout << (char *) threadPool->work_queue.pq.top().arg << endl;
+        // cout << (char *) threadPool->work_queue.pq.top().arg << endl;
         task = ThreadPool_get_work(threadPool);                             // gets the next task
         task->func(task->arg);                                           // runs the task
-        pthread_mutex_unlock(&(tp->thread_mutex_lock));                           // unlock
+        //pthread_mutex_unlock(&(tp->thread_mutex_lock));                           // unlock
         if(threadPool->num_tasks == 0 ){
             break;
         }

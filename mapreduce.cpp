@@ -18,7 +18,7 @@ struct cmp_str
 typedef void (*Mapper)(char *file_name);
 typedef void (*Reducer)(char *key, int partition_number);
 unsigned int num_partitions; 
-std::vector<std::multimap<char*, char*, cmp_str>>map_vector;
+std::vector<std::multimap<string, string>>map_vector;
 pthread_mutex_t lock1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t lock2 = PTHREAD_MUTEX_INITIALIZER;
 Reducer reduce;
@@ -56,7 +56,7 @@ void MR_Run(int num_files, char *filenames[],
                 reduce = concate;                                           // destroys the mapper threads
                 pthread_t ReducerTP[num_reducers];                                      // creates a reducer thread pool which is basically
                 for(int i=0;i<num_reducers;i++){                                        // a list of threads
-                    cout << "index : " << i << endl;
+                    // cout << "index : " << i << endl;
                     pthread_create(&ReducerTP[i],NULL,&wrapper_func,new int (i));
                 }
                 for(int i=0;i<num_reducers;i++){                                        // a list of threads
@@ -67,7 +67,8 @@ void MR_Run(int num_files, char *filenames[],
 void *wrapper_func(void* num){
     int *part_num = (int*)num;
     MR_ProcessPartition(*part_num);
-    delete num;
+    // delete num;
+    return(NULL);
 }
 
 // *when the MR Emit function is called by a mapper thread, it first determines
@@ -83,7 +84,9 @@ void MR_Emit(char *key, char *value){
     //cout<<"Inside MR_EMIT"<<endl;
     
     unsigned long new_hash = MR_Partition(key,num_partitions);
-    map_vector[new_hash].insert(pair<char*,char*>(key,value));
+    string skey = key;
+    string svalue = value;
+    map_vector[new_hash].insert(pair<string,string>(skey,svalue));
     //cout << "KEY: " << map_vector[new_hash].find(key)->first << endl;
     pthread_mutex_unlock(&lock1);
 }
@@ -100,27 +103,32 @@ unsigned long MR_Partition(char *key, int num_partitions){
 }
 
 void MR_ProcessPartition(int partition_number){
-    std::multimap<char*,char*>::iterator iterator1;
+    std::multimap<string,string>::iterator iterator1;
     // pthread_mutex_lock(&lock2);
-    cout << "INSIDE MR PP" << endl;
-    for(iterator1 = map_vector[partition_number].begin();iterator1 != map_vector[partition_number].end();){
+    // cout << "INSIDE MR PP" << endl;
+    // if(iterator1 = map_vector[partition_number].begin();iterator1 != map_vector[partition_number].end();){
+    //     iterator1 = map_vector[partition_number].begin();
+    //     //cout<< iterator1->first << endl;
+    //     reduce((char *)iterator1->first.c_str(),partition_number);
+    // }
+    while(!map_vector[partition_number].empty()){
         iterator1 = map_vector[partition_number].begin();
         //cout<< iterator1->first << endl;
-        reduce(iterator1->first,partition_number);
+        reduce((char *)iterator1->first.c_str(),partition_number);
     }
     // pthread_mutex_unlock(&lock2);
 
 }
 
 char *MR_GetNext(char *key, int partition_number){
-    std::multimap<char*,char*>::iterator iterator2;
+    std::multimap<string,string>::iterator iterator2;
     // cout << "INSIDE GET NEXT " << partition_number << endl;
     if(map_vector[partition_number].empty()){
         return NULL;
     }
     iterator2 = map_vector[partition_number].begin();
-
-    if(strcmp(key,iterator2->first) == 0){
+    string skey = key;
+    if(skey == iterator2->first){
         // cout << "First : " << iterator2->first << endl;
         map_vector[partition_number].erase(iterator2);
         return key;
