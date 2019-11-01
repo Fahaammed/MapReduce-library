@@ -14,26 +14,26 @@ typedef void (*thread_func_t)(void *arg);
 typedef struct ThreadPool_work_t {
     thread_func_t func;              // The function pointer
     void *arg;                       // The arguments for the function
-    // TODO: Add other members here if needed
+
     // source for stat: https://techoverflow.net/2013/08/21/how-to-get-filesize-using-stat-in-cc/
-    bool operator<(const ThreadPool_work_t &other) const {
-        struct stat st;
+
+    bool operator<(const ThreadPool_work_t &other) const {                                                      // an operator to check form comparisons
+        struct stat st;                                                                                         // creates new stat objects
         struct stat st2;
-        stat((const char*)arg, &st);
+        stat((const char*)arg, &st);                                                                            // assigns those stat objects to the files to compare
         stat((const char*)other.arg, &st2);
-        return st.st_size < st2.st_size;
+        return st.st_size < st2.st_size;                                                                        // compares the files
     }
 } ThreadPool_work_t;
 
 typedef struct {
-    // TODO: Add members here
     // source for priority queue: https://www.geeksforgeeks.org/stl-priority-queue-for-structure-or-class/
-    priority_queue <ThreadPool_work_t*> pq; // a priority queue where the tasks are stored.
+    priority_queue <ThreadPool_work_t*> pq;                                                                     // a priority queue where the tasks are stored.
 } ThreadPool_work_queue_t;
 
 typedef struct {
     // TODO: Add members here
-    pthread_t *threads;
+    pthread_t *threads;                                                                                         // a list of thread 
     ThreadPool_work_queue_t *work_queue;
     unsigned int num_threads;  // number of threads
     pthread_mutex_t thread_mutex_lock;  // a mutex loxk for the thread

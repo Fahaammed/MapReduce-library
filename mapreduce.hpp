@@ -6,6 +6,7 @@ typedef void (*Mapper)(char *file_name);
 typedef void (*Reducer)(char *key, int partition_number);
 void *wrapper_func(void* num);
 
+
 void MR_Run(int num_files, char *filenames[],
             Mapper map, int num_mappers,
             Reducer concate, int num_reducers);
