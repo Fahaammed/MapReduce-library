@@ -5,3 +5,15 @@ This: 1
 word: 1
 This: 1
 exactly: 1
+This: 248
+exactly: 249
+word: 267
+This: 5000
+exactly: 5000
+word: 5000
+This: 5000
+exactly: 5000
+word: 5000
+This: 5000
+exactly: 5000
+word: 5000

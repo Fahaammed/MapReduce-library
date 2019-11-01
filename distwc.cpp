@@ -20,7 +20,7 @@ void Map(char *file_name) {
         char *token, *dummy = line;
         while ((token = strsep(&dummy, " \t\n\r")) != NULL)
             //cout << token << endl;
-            MR_Emit(token, "1");
+            MR_Emit(token, (char *)"1");
 
     }
     free(line);
@@ -42,5 +42,5 @@ void Reduce(char *key, int partition_number) {
 }
 
 int main(int argc, char *argv[]) {
-    MR_Run(argc - 1, &(argv[1]), Map, 2, Reduce, 2);
+    MR_Run(argc - 1, &(argv[1]), Map, 10, Reduce, 10);
 }

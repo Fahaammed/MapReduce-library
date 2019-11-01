@@ -43,3 +43,15 @@ see: 70
 test: 55
 the: 66
 (null): 0
+each: 265
+for: 207
+should: 231
+each: 5000
+for: 5000
+should: 5000
+each: 5000
+for: 5000
+should: 5000
+each: 5000
+for: 5000
+should: 5000
