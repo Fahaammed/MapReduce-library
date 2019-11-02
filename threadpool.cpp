@@ -1,4 +1,4 @@
-#include "threadpool.hpp"
+#include "threadpool.h"
 #include <iostream>
 #include <stdlib.h>
 
@@ -78,8 +78,7 @@ bool ThreadPool_add_work(ThreadPool_t *tp, thread_func_t func, void *arg){
 ThreadPool_work_t *ThreadPool_get_work(ThreadPool_t *tp){
     ThreadPool_work_t *task = new ThreadPool_work_t;                                        // create a new task
     task->arg = (void *) tp->work_queue->pq.top()->arg;                                     // assign the task->arg to the top task in the priority queue arg
-    task->func = tp->work_queue->pq.top()->func;                                            // assign the task->func to the top task in the priority queue func
-                                                    
+    task->func = tp->work_queue->pq.top()->func;                                            // assign the task->func to the top task in the priority queue func                                                  
     tp->num_tasks--;                                                                        // decrease number of tasks
     tp->work_queue->pq.pop();                                                               // delete the task from the work queue
     return task;                                                                            // return the task
@@ -101,10 +100,11 @@ void *Thread_run(ThreadPool_t *tp){
         }
         ThreadPool_work_t *task;                                                            // creates a new task
         task = ThreadPool_get_work(tp);                                                     // gets the next task from the work queue
+        pthread_mutex_unlock(&(tp->thread_mutex_lock));                                     // unlocks the mutex lock
         task->func(task->arg);                                                              // runs the task
         
         delete task;                                                                        // deletes the task
-        pthread_mutex_unlock(&(tp->thread_mutex_lock));                                     // unlocks the mutex lock
+        //pthread_mutex_unlock(&(tp->thread_mutex_lock));                                     // unlocks the mutex lock
     }
     pthread_mutex_unlock(&(tp->thread_mutex_lock));                                         // unlocks the mutex lock if the while loop broke
     return NULL;                                                                            // return NULL

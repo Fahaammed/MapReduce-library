@@ -1,5 +1,5 @@
-#include "mapreduce.hpp"
-#include "threadpool.hpp"
+#include "mapreduce.h"
+#include "threadpool.h"
 #include <map>
 #include <iostream>
 #include <string>
@@ -10,7 +10,7 @@ using namespace std;
 typedef void (*Mapper)(char *file_name);
 typedef void (*Reducer)(char *key, int partition_number);
 unsigned int num_partitions; 
-std::vector<std::multimap<string, string>>map_vector;                                   // creates a vector of multimap which stores the key, value pairs in order
+std::vector<std::multimap<string, string> >map_vector;                                   // creates a vector of multimap which stores the key, value pairs in order
 pthread_mutex_t lock1 = PTHREAD_MUTEX_INITIALIZER;                                      // creates a mutex lock
 Reducer reduce;
 

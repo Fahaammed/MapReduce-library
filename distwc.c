@@ -15,7 +15,8 @@ void Map(char *file_name) {
     while (getline(&line, &size, fp) != -1) {
         char *token, *dummy = line;
         while ((token = strsep(&dummy, " \t\n\r")) != NULL)
-            MR_Emit(token, "1");
+            MR_Emit(token, (char *)"1");
+
     }
     free(line);
     fclose(fp);
@@ -28,6 +29,7 @@ void Reduce(char *key, int partition_number) {
     while ((value = MR_GetNext(key, partition_number)) != NULL)
         count++;
     sprintf(name, "result-%d.txt", partition_number);
+
     FILE *fp = fopen(name, "a");
     printf("%s: %d\n", key, count);
     fprintf(fp, "%s: %d\n", key, count);
